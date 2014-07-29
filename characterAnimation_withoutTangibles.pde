@@ -21,7 +21,7 @@ boolean printFPS;
 
 int it=0, iter=0;
 
-float x0, y0, x1, y1, a_x0, a_y0, a_x1, a_y1, yell_x, yell_y, y_xL, y_yL, y_x, y_y;
+float x0, y0, x1, y1, a_x0, a_y0, a_x1, a_y1;
 double yellow_x[], yellow_xL[];
 double yellow_y[], yellow_yL[];
 double jYellow_x[], jYellow_xL[];
@@ -54,6 +54,10 @@ int whiteRightHandJointX = 150+whiteSkeletonXincr;
 int whiteRightHandJointY = 304;
 int whiteLeftHandJointX = whiteRightHandJointX-110;
 int whiteLeftHandJointY = 304;
+int whiteRightHandEndX = 300+100;
+int whiteRightHandEndY = 200;
+int whiteLeftHandEndX = 300-200;
+int whiteLeftHandEndY = 200;
 int animatingFaceX = 700;
 int animatingFaceY = 720/2;
 int whiteSkeletonX = 100+whiteSkeletonXincr;
@@ -62,7 +66,6 @@ int whiteSkeletonY = 720/2;
 int yellowJointX;
 int jointYellow_x, jointYellow_xL;
 
-int handLength = 250;
 
 int jLx; // joint Left hand
 int eLx; // end left hand
@@ -75,6 +78,16 @@ int bufferArea = 75;
 float xTouc;
 float yTouc;
 
+
+float yellow_x_ = (whiteRightHandEndX-whiteRightHandJointX)+(animatingFaceX+whiteSkeletonXincr);
+float yellow_y_ = whiteRightHandEndY-15;
+
+float yellow_xL_ = (animatingFaceX-whiteSkeletonXincr) - (whiteLeftHandJointX - whiteLeftHandEndX);
+float yellow_yL_ = whiteRightHandEndY-15;
+
+int jYellow_x_ = animatingFaceX-whiteSkeletonXincr+yellowFaceSize;
+int jYellow_xL_ = animatingFaceX-whiteSkeletonXincr;
+
 color[] animColor = {
   color(255, 255, 0)/*yellow*/, color(125, 193, 255)/*pink*/, color(184, 20, 103)/*blue*/
 };
@@ -85,6 +98,14 @@ public class xandy
   public double y;
 }
 
+
+int whiteHandLength = 150;
+int yellowHandLength = 200;
+
+float dx = whiteRightHandJointX;
+float dy = whiteRightHandJointY;
+float angle1 = atan2(dy, dx);  
+float angle2 = atan2(dy, dx);  
 //-----------------------------------------------------------------------------------------
 
 void setup() {
@@ -135,12 +156,11 @@ void draw() {
 
     drawAnimatingChar();
     drawWhiteChar();
-    drawWhiteSkeleton();
     //drawBlueCirclesOnTouch();
+    if (TouchEvents == 1)
+      ifTouchEventIs1();
     if (TouchEvents == 2)
       ifTouchEventIs2();
-    if (TouchEvents == 4)
-      ifTouchEventIs4();
     recordButton();
     stopButton();
     playButton();
@@ -179,68 +199,73 @@ void draw() {
 
 //-------------------------------------------------------------------------------
 
-void ifTouchEventIs2()
+void ifTouchEventIs1()
 {
-  rightHandJoint0 = sqrt(pow(xTouch[0]-(whiteRightHandJointX), 2) + pow(yTouch[0]-(whiteRightHandJointY), 2));
-  rightHandJoint1 = sqrt(pow(xTouch[1]-(whiteRightHandJointX), 2) + pow(yTouch[1]-(whiteRightHandJointY), 2));
-  leftHandJoint0 = sqrt(pow(xTouch[0]-(whiteLeftHandJointX), 2) + pow(yTouch[0]-(whiteLeftHandJointY), 2));
-  leftHandJoint1 = sqrt(pow(xTouch[1]-(whiteLeftHandJointX), 2) + pow(yTouch[1]-(whiteLeftHandJointY), 2));
+  rightHandJoint0 = sqrt(pow(xTouch[0]-(whiteRightHandEndX), 2) + pow(yTouch[0]-(whiteRightHandEndY), 2));
+  leftHandJoint0 = sqrt(pow(xTouch[0]-(whiteLeftHandEndX), 2) + pow(yTouch[0]-(whiteLeftHandEndY), 2));
+  rightHandJoint1 = sqrt(pow(xTouch[0]-(whiteRightHandJointX), 2) + pow(yTouch[0]-(whiteRightHandJointY), 2));
+  leftHandJoint1 = sqrt(pow(xTouch[0]-(whiteLeftHandJointX), 2) + pow(yTouch[0]-(whiteLeftHandJointY), 2));
+  strokeWeight(25);
+  stroke(255);
+  segment(whiteRightHandJointX, whiteRightHandJointY, angle1, whiteHandLength);
+  segment(whiteLeftHandJointX, whiteLeftHandJointY, angle2, whiteHandLength);
 
-  strokeWeight(5);
-  stroke(255, 255, 255);
-  if ((rightHandJoint1<bufferArea)) // right joint id touchId[1]
+  //line(whiteRightHandJointX, whiteRightHandJointY, whiteRightHandEndX, whiteRightHandEndY);
+  //line(whiteLeftHandJointX, whiteLeftHandJointY, whiteLeftHandEndX, whiteLeftHandEndY);
+  if (template1 == true)
+    stroke(animColor[0]);
+  if (template2 == true)
+    stroke(animColor[1]);
+  if (template3 == true)
+    stroke(animColor[2]);
+  //  line(jYellow_x_, whiteRightHandJointY-15, yellow_x_, yellow_y_);
+  //  line(jYellow_xL_, whiteRightHandJointY-15, yellow_xL_, yellow_yL_);
+  segment(jYellow_x_, whiteRightHandJointY-15, angle1, yellowHandLength);
+  segment(jYellow_xL_, whiteRightHandJointY-15, angle2, yellowHandLength);
+
+  if ((rightHandJoint0<bufferArea)&&(rightHandJoint1<whiteHandLength+50)&&(rightHandJoint1>whiteHandLength-50)) // right joint id touchId[0]
   {
-    redHighlight();
+    whiteRightHandEndX = (int)xTouch[0];
+    whiteRightHandEndY = (int)yTouch[0];
+    dx = xTouch[0] - whiteRightHandJointX;
+    dy = yTouch[0] - whiteRightHandJointY;
+    angle1 = atan2(dy, dx);
+    strokeWeight(25);
+    stroke(255);
+    //segment(whiteRightHandJointX, whiteRightHandJointY, angle1, whiteHandLength);
+    //  the ink cretaes 2 points at a predefined distance on the tangible and hence this distance will always remain const.
     touchEvent = true;
-    line(whiteRightHandJointX, whiteRightHandJointY, xTouch[0], yTouch[0]); //  the ink cretaes 2 points at a predefined distance on the tangible and hence this distance will always remain const.
-    yellow_x[it] = (xTouch[0]-whiteRightHandJointX)+(animatingFaceX+whiteSkeletonXincr);
-    yellow_y[it] = yTouch[0]-15;
-    jYellow_x[it] = animatingFaceX-whiteSkeletonXincr+yellowFaceSize;
-    ifTouchEventIs2_drawAnimatingHand(it);
-    if (record == true)
-    {
-      it++;
-    }
-  }
-  else if ((rightHandJoint0<bufferArea)) // right joint id touchId[0]
-  {
-    redHighlight();
-    line(whiteRightHandJointX, whiteRightHandJointY, xTouch[1], yTouch[1]); //  the ink cretaes 2 points at a predefined distance on the tangible and hence this distance will always remain const.
-    touchEvent = true;
-    yellow_x[it] = (xTouch[1]-whiteRightHandJointX)+(animatingFaceX+whiteSkeletonXincr);
+    yellow_x[it] = (whiteRightHandEndX-whiteRightHandJointX)+(animatingFaceX+whiteSkeletonXincr);
     //x1 = xTouch[1]+animatingFaceX-whiteSkeletonXincr;
-    yellow_y[it] = yTouch[1]-15;
+    yellow_y[it] = whiteRightHandEndY-15;
     jYellow_x[it] = animatingFaceX-whiteSkeletonXincr+yellowFaceSize;
-    ifTouchEventIs2_drawAnimatingHand(it);
+    yellow_x_ = (float)yellow_x[it];
+    yellow_y_ = (float)yellow_y[it];
+    jYellow_x_ = (int)jYellow_x[it];
+    ifTouchEventIs1_drawAnimatingHand(it, angle1);
     if (record == true)
     {
       it++;
     }
   }
 
-  if ((leftHandJoint1<bufferArea)) // right joint id touchId[1]
+  else if ((leftHandJoint0<bufferArea)&&(leftHandJoint1<whiteHandLength+50)&&(leftHandJoint1>whiteHandLength-50)) // right joint id touchId[0]
   {
-    redHighlight();
+    whiteLeftHandEndX = (int)xTouch[0];
+    whiteLeftHandEndY = (int)yTouch[0];
+    dx = xTouch[0] - whiteLeftHandJointX;
+    dy = yTouch[0] - whiteLeftHandJointY;
+    angle2 = atan2(dy, dx);
+    //segment(whiteLeftHandJointX, whiteLeftHandJointY, angle2, whiteHandLength);
+    //  the ink cretaes 2 points at a predefined distance on the tangible and hence this distance will always remain const.
     touchEvent = true;
-    line(whiteLeftHandJointX, whiteLeftHandJointY, xTouch[0], yTouch[0]); //  the ink cretaes 2 points at a predefined distance on the tangible and hence this distance will always remain const.
-    yellow_x[it] = (animatingFaceX-whiteSkeletonXincr) - (whiteLeftHandJointX - xTouch[0]);
-    yellow_y[it] = yTouch[0]-15;
+    yellow_x[it] = (animatingFaceX-whiteSkeletonXincr) - (whiteLeftHandJointX - whiteLeftHandEndX);
+    yellow_y[it] = whiteLeftHandEndY-15;
     jYellow_x[it] = animatingFaceX-whiteSkeletonXincr;
-    ifTouchEventIs2_drawAnimatingHand(it);
-    if (record == true)
-    {
-      it++;
-    }
-  }
-  else if ((leftHandJoint0<bufferArea)) // right joint id touchId[0]
-  {
-    redHighlight();
-    line(whiteLeftHandJointX, whiteLeftHandJointY, xTouch[1], yTouch[1]); //  the ink cretaes 2 points at a predefined distance on the tangible and hence this distance will always remain const.
-    touchEvent = true;
-    yellow_x[it] = (animatingFaceX-whiteSkeletonXincr) - (whiteLeftHandJointX - xTouch[1]);
-    yellow_y[it] = yTouch[1]-15;
-    jYellow_x[it] = animatingFaceX-whiteSkeletonXincr;
-    ifTouchEventIs2_drawAnimatingHand(it);
+    yellow_xL_ =(float)yellow_x[it];
+    yellow_yL_ = (float)yellow_y[it];
+    jYellow_xL_ = (int)jYellow_x[it];
+    ifTouchEventIs1_drawAnimatingHand(it, angle2);
     if (record == true)
     {
       it++;
@@ -248,64 +273,53 @@ void ifTouchEventIs2()
   }
 }
 
-void ifTouchEventIs4()
+void ifTouchEventIs2()
 {
   int i, j;
-  //check for right joint
-  for (i=0;i<4;i++)
+
+  strokeWeight(25);
+  stroke(255);
+  line(whiteRightHandJointX, whiteRightHandJointY, whiteRightHandEndX, whiteRightHandEndY);
+  strokeWeight(25);
+  stroke(255);
+  line(whiteLeftHandJointX, whiteLeftHandJointY, whiteLeftHandEndX, whiteLeftHandEndY);
+  for (i=0;i<2;i++)
   {
-    sqrtR[i] = sqrt(pow(xTouch[i]-(whiteRightHandJointX), 2) + pow(yTouch[i]-(whiteRightHandJointY), 2));
+    sqrtR[i] = sqrt(pow(xTouch[i]-(whiteRightHandEndX), 2) + pow(yTouch[i]-(whiteRightHandEndY), 2));
     if (sqrtR[i] < bufferArea)// check for right joint --- touchid[i] is the right joint
-    { 
-      redHighlight();
+    {
       jRx = i;
-      for (j=0;j<4;j++)
-      {
-        if (j != jRx)
-        {
-          if (xTouch[j] > whiteSkeletonX)
-            eRx = j;//RECORD j
-        }
-      }
-      strokeWeight(5);
-      stroke(255, 255, 255);
       touchEvent = true;
-      //line(xTouch[jRx], yTouch[jRx], xTouch[eRx], yTouch[eRx]); //  the ink cretaes 2 points at a predefined distance on the tangible and hence this distance will always remain const.
-      line (whiteRightHandJointX, whiteRightHandJointY, xTouch[eRx], yTouch[eRx]);
-      yellow_x[it] = (xTouch[eRx]-whiteRightHandJointX)+(animatingFaceX+whiteSkeletonXincr);
-      yellow_y[it] = yTouch[eRx]-15;
+      whiteRightHandEndX = (int)xTouch[i];
+      whiteRightHandEndY = (int)yTouch[i];
+      yellow_x[it] = (whiteRightHandEndX-whiteRightHandJointX)+(animatingFaceX+whiteSkeletonXincr);
+      yellow_y[it] = whiteRightHandEndY-15;
       jYellow_x[it] = animatingFaceX-whiteSkeletonXincr+yellowFaceSize;
-      ifTouchEventIs4_drawAnimatingHand(it, (float)yellow_x[it], (float) yellow_y[it], (int)jYellow_x[it]);
+      yellow_x_ = (float)yellow_x[it];
+      yellow_y_ = (float)yellow_y[it];
+      jYellow_x_ = (int)jYellow_x[it];
+      ifTouchEventIs2_drawAnimatingHand(it, (float)yellow_x[it], (float) yellow_y[it], (int)jYellow_x[it]);
     }
   }
 
 
-  for (i=0;i<4;i++)
+  for (i=0;i<2;i++)
   {
-    if ((i != jRx) && (i != eRx))
+    if (i != jRx)
     {
-      sqrtL[i] = sqrt(pow(xTouch[i]-(whiteLeftHandJointX), 2) + pow(yTouch[i]-(whiteLeftHandJointY), 2));
-      if (sqrtL[i] < bufferArea)// check for right joint --- touchid[i] is the right joint
+      //sqrtL[i] = sqrt(pow(xTouch[i]-(whiteLeftHandJointX), 2) + pow(yTouch[i]-(whiteLeftHandJointY), 2));
+      //if (sqrtL[i] < bufferArea)// check for right joint --- touchid[i] is the right joint
       { 
-        //redHighlight();
-        jLx = i;
-        for (j=0;j<4;j++)
-        {
-          if ((j != jRx) && (j != eRx) && (j != jLx))
-          {
-            if (xTouch[j] < whiteSkeletonX)
-              eLx = j;//RECORD j
-          }
-        }
-        strokeWeight(5);
-        stroke(255, 255, 255);
         touchEvent = true;
-        //line(xTouch[jLx], yTouch[jLx], xTouch[eLx], yTouch[eLx]);
-        line (whiteLeftHandJointX, whiteLeftHandJointY, xTouch[eLx], yTouch[eLx]);
-        yellow_xL[it]  = (animatingFaceX-whiteSkeletonXincr) - (whiteLeftHandJointX - xTouch[eLx]);
-        yellow_yL[it]  = yTouch[eLx]-15;
+        whiteLeftHandEndX = (int)xTouch[i];
+        whiteLeftHandEndY = (int)yTouch[i];
+        yellow_xL[it]  = (animatingFaceX-whiteSkeletonXincr) - (whiteLeftHandJointX - whiteLeftHandEndX);
+        yellow_yL[it]  = whiteLeftHandEndY-15;
         jYellow_xL[it] = animatingFaceX-whiteSkeletonXincr;
-        ifTouchEventIs4_drawAnimatingHand(it, (float)yellow_xL[it], (float) yellow_yL[it], (int)jYellow_xL[it]);
+        yellow_xL_ =(float)yellow_xL[it];
+        yellow_yL_ = (float)yellow_yL[it];
+        jYellow_xL_ = (int)jYellow_xL[it];
+        ifTouchEventIs2_drawAnimatingHand(it, (float)yellow_xL[it], (float) yellow_yL[it], (int)jYellow_xL[it]);
         if (record == true)
         {
           it++;
@@ -451,28 +465,18 @@ void drawRecordButton_afterClicked()
 
 void drawWhiteChar() //white left body
 {
-  noFill();
-  stroke(255);
+  fill(255);
   rect(whiteSkeletonX, whiteSkeletonY, 160, 160, 15);
-}
 
-void drawWhiteSkeleton()
-{
-  strokeWeight(5);
-  stroke(0, 180, 255, 180);
-  noFill();
-
-  if ((xTouch[0]==0)&&(yTouch[0]==0)) 
+  if ((xTouch[0] == 0)&&(yTouch[0] == 0))
   {
     strokeWeight(25);
     stroke(255);
-    line(whiteRightHandJointX, whiteRightHandJointY, 300+100, 200); //white hand skeleton
-
-    fill(255, 255, 255);
-    noStroke();
-    rect(whiteSkeletonX, whiteSkeletonY, 160, 160, 15); //white left skeleton
+    line(whiteRightHandJointX, whiteRightHandJointY, 300+100, 200); //white right hand skeleton
+    line(whiteLeftHandJointX, whiteRightHandJointY, 300-200, 200); //white left hand skeleton
   }
 }
+
 
 void drawBlueCirclesOnTouch()
 {
@@ -553,7 +557,7 @@ void drawAnimatingChar()
   arc(animatingFaceX-75+75, animatingFaceY+25+25, 75, 75, 0, PI, OPEN);
 }
 
-void ifTouchEventIs2_drawAnimatingHand(int itIncr) {
+void ifTouchEventIs1_drawAnimatingHand(int itIncr, float angle) {
   strokeWeight(25);
   if (template1 == true)
   {
@@ -570,10 +574,11 @@ void ifTouchEventIs2_drawAnimatingHand(int itIncr) {
     charColor[itIncr] = 'b';
     stroke(animColor[2]);
   }
-  line((int)jYellow_x[itIncr], whiteRightHandJointY-15, (float)yellow_x[itIncr], (float)yellow_y[itIncr]);// hand
+  //line((int)jYellow_x[itIncr], whiteRightHandJointY-15, (float)yellow_x[itIncr], (float)yellow_y[itIncr]);// hand
+  segment((int)jYellow_x[itIncr], whiteRightHandJointY-15, angle, yellowHandLength);
 }
 
-void ifTouchEventIs4_drawAnimatingHand(int itIncr, float yxx, float yyy, int join) {
+void ifTouchEventIs2_drawAnimatingHand(int itIncr, float yxx, float yyy, int join) {
   strokeWeight(25);
   if (template1 == true)
   {
@@ -629,4 +634,12 @@ void drawAnimatedHand(int iter, float yxx, float yyy, int join)
   line(join, whiteRightHandJointY-15, yxx, yyy); //hand
 }
 
+
+void segment(float x, float y, float a, int handLength) {
+  pushMatrix();
+  translate(x, y);
+  rotate(a);
+  line(0, 0, handLength, 0);
+  popMatrix();
+}
 
